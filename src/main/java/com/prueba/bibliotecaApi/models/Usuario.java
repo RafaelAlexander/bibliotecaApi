@@ -34,7 +34,7 @@ public class Usuario {
 
   public Usuario(String nombre, String password) {
     this.nombre = nombre;
-    this.password = nombre;
+    this.password = password;
   }
 
   public Usuario() {
@@ -46,10 +46,16 @@ public class Usuario {
     }
   }
 
-  void agregarRol(Rol rol){
+  public void agregarRol(Rol rol){
     if(this.roles.stream().map(rolX -> rolX.getClass()).collect(Collectors.toList()).contains(rol.getClass())){
       throw new RolErroneoException("Usted ya tiene este rol");
     }
     this.roles.add(rol);
+  }
+
+  public List<String> darNombreDeRoles(){
+    List<String> rolesToString = this.roles.stream().map(Object::getClass).map(Class::toString).collect(Collectors.toList());
+    rolesToString.add("Usuario");
+    return rolesToString;
   }
 }
