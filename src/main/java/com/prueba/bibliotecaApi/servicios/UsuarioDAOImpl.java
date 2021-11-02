@@ -49,16 +49,21 @@ public class UsuarioDAOImpl implements UsuarioDAO, UserDetailsService {
   }
 
   @Override
+  public Usuario findByNombre(String nombre) {
+    return this.repoUsuario.findByNombre(nombre);
+  }
+
+  @Override
   public UserDetails loadUserByUsername(String nombre) throws UsernameNotFoundException {
     Usuario usuario = repoUsuario.findByNombre(nombre);
-    if(usuario == null){
+    if (usuario == null) {
       log.error("No hay un usuario con ese nombre");
       throw new UsernameNotFoundException("No hay un usuario con ese nombre");
-    }else {
-      log.info("Usuario encontrado en la BD: {}",nombre);
+    } else {
+      log.info("Usuario encontrado en la BD: {}", nombre);
     }
     return new org.springframework.security.core.userdetails.User(usuario.getNombre(),
         usuario.getPassword(),
-        usuario.darNombreDeRoles().stream().map(rol->new SimpleGrantedAuthority(rol)).collect(Collectors.toList()));
+        usuario.darNombreDeRoles().stream().map(rol -> new SimpleGrantedAuthority(rol)).collect(Collectors.toList()));
   }
 }

@@ -9,4 +9,5 @@ public interface UsuarioDAO{
   Usuario save(Usuario usuario);
   Usuario getById(Long id);
   void delete(Usuario usuario);
+  Usuario findByNombre(String nombre);
 }
