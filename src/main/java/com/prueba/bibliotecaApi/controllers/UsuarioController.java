@@ -34,6 +34,8 @@ public class UsuarioController {
   @Autowired
   private UsuarioDAOImpl repositorio;
 
+  private final String palabraSecreta = "esto no es una clave secreta";
+
   @GetMapping(value = "/usuarios")
   public ResponseEntity<List<Usuario>> darTodosLoUsuarios() {
     return ResponseEntity.ok().body(repositorio.findAll());
@@ -53,22 +55,22 @@ public class UsuarioController {
     if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
       try {
         String refreshToken = authorizationHeader.substring("Bearer ".length());
-        Algorithm algorithm = Algorithm.HMAC256("esto no es una clave secreta".getBytes());
+        Algorithm algorithm = Algorithm.HMAC256(this.palabraSecreta.getBytes());
         JWTVerifier verifier = JWT.require(algorithm).build();
         DecodedJWT decodedJWT = verifier.verify(refreshToken);
         String nombre = decodedJWT.getSubject();
-        Usuario usuario = repositorio.findByNombre(nombre);
+        Usuario usuario = this.repositorio.findByNombre(nombre);
         String accessToken = JWT.create()
             .withSubject(usuario.getNombre())
-            .withExpiresAt(new Date(System.currentTimeMillis()+10*60*1000))
+            .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 60 * 1000))
             .withIssuer(request.getRequestURL().toString())
-            .withClaim("roles",usuario.darNombreDeRoles())
+            .withClaim("roles", usuario.darNombreDeRoles())
             .sign(algorithm);
-        Map<String,String> tokens = new HashMap<>();
-        tokens.put("accessToken",accessToken);
-        tokens.put("refreshToken",refreshToken);
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("accessToken", accessToken);
+        tokens.put("refreshToken", refreshToken);
         response.setContentType(APPLICATION_JSON_VALUE);
-        new ObjectMapper().writeValue(response.getOutputStream(),tokens);
+        new ObjectMapper().writeValue(response.getOutputStream(), tokens);
       } catch (Exception exception) {
         response.setHeader("error", exception.getMessage());
         response.setStatus(FORBIDDEN.value());
@@ -82,13 +84,32 @@ public class UsuarioController {
     }
   }
 
-  @DeleteMapping(value = "/usuario/{id}/delete")
-  public ResponseEntity<?> borrar(@PathVariable Long id) {
-    Usuario usuario = this.repositorio.getById(id);
+  @DeleteMapping(value = "/delete")
+  public ResponseEntity<?> borrar(HttpServletRequest request) {
+    Usuario usuario = this.obtenerUsuarioJWT(request);
     if (usuario != null) {
       this.repositorio.delete(usuario);
       return ResponseEntity.ok().build();
     }
-    return ResponseEntity.internalServerError().build();
+    return ResponseEntity.notFound().build();
+  }
+
+  private Usuario obtenerUsuarioJWT(HttpServletRequest request) {
+    String authorizationHeader = request.getHeader(AUTHORIZATION);
+    if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+      try {
+        String refreshToken = authorizationHeader.substring("Bearer ".length());
+        Algorithm algorithm = Algorithm.HMAC256(this.palabraSecreta.getBytes());
+        JWTVerifier verifier = JWT.require(algorithm).build();
+        DecodedJWT decodedJWT = verifier.verify(refreshToken);
+        String nombre = decodedJWT.getSubject();
+        Usuario usuario = this.repositorio.findByNombre(nombre);
+        return usuario;
+      } catch (Exception exception) {
+        return null;
+      }
+    } else {
+      return null;
+    }
   }
 }
