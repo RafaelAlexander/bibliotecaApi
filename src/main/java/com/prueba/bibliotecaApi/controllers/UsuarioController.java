@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.prueba.bibliotecaApi.models.Cliente;
 import com.prueba.bibliotecaApi.models.Usuario;
 import com.prueba.bibliotecaApi.servicios.UsuarioDAOImpl;
 import lombok.RequiredArgsConstructor;
@@ -92,6 +93,16 @@ public class UsuarioController {
       return ResponseEntity.ok().build();
     }
     return ResponseEntity.notFound().build();
+  }
+
+  @PostMapping(value = "/cliente/save")
+  public ResponseEntity<?> agregarClienteAUsuario(@RequestBody Cliente cliente, HttpServletRequest request) {
+    Usuario usuario = this.obtenerUsuarioJWT(request);
+    usuario.setCliente(cliente);
+    URI uri = URI.create(ServletUriComponentsBuilder.
+        fromCurrentContextPath().
+        path("/api/cliente/save").toUriString());
+    return ResponseEntity.created(uri).body(this.repositorio.save(usuario));
   }
 
   private Usuario obtenerUsuarioJWT(HttpServletRequest request) {

@@ -4,13 +4,18 @@ import com.prueba.bibliotecaApi.exceptions.ValorVacioException;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
+import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@DiscriminatorValue("adm")
-public class Administrador extends Rol {
+public class Administrador {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.TABLE)
+  @Getter
+  @Setter
+  private Long id;
+
   @Getter
   @Setter
   private Long numeroDePersonal;

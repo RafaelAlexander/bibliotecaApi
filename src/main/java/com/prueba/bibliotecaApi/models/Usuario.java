@@ -8,7 +8,6 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity
 public class Usuario {
@@ -25,11 +24,17 @@ public class Usuario {
   private String password;
 
   @Getter
-  @OneToMany(cascade = CascadeType.ALL)
-  @JoinColumn(name = "id_usuario")
-  private List<Rol> roles = new ArrayList<>();
+  @Setter
+  @OneToOne(cascade = CascadeType.ALL)
+  private Cliente cliente;
 
-  @Getter @Setter
+  @Getter
+  @Setter
+  @OneToOne(cascade = CascadeType.ALL)
+  private Administrador administrador;
+
+  @Getter
+  @Setter
   private int cantMaxRol;
 
   public Usuario(String nombre, String password) {
@@ -41,20 +46,17 @@ public class Usuario {
   }
 
   private void verificarVacio(String username, String password) {
-    if(username == null|| password == null){
+    if (username == null || password == null) {
       throw new ValorVacioException("Usted debe rellenar todos los campos");
     }
   }
 
-  public void agregarRol(Rol rol){
-    if(this.roles.stream().map(rolX -> rolX.getClass()).collect(Collectors.toList()).contains(rol.getClass())){
-      throw new RolErroneoException("Usted ya tiene este rol");
-    }
-    this.roles.add(rol);
-  }
-
-  public List<String> darNombreDeRoles(){
-    List<String> rolesToString = this.roles.stream().map(Object::getClass).map(Class::toString).collect(Collectors.toList());
+  public List<String> darNombreDeRoles() {
+    List<String> rolesToString = new ArrayList<>();
+    if (this.cliente != null)
+      rolesToString.add(this.cliente.getClass().toString());
+    if (this.administrador != null)
+      rolesToString.add(this.administrador.getClass().toString());
     rolesToString.add("Usuario");
     return rolesToString;
   }
