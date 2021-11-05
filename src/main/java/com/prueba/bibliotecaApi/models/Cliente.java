@@ -39,6 +39,10 @@ public class Cliente {
     this.telefono = telefono;
   }
 
+  public Cliente() {
+
+  }
+
   private void verificarValorVacio(String nombre, String apellido, String email, String telefono) {
     if (nombre == null || apellido == null || email == null || telefono == null) {
       throw new ValorVacioException("Usted no relleno todos los campos");

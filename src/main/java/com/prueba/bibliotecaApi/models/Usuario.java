@@ -1,6 +1,5 @@
 package com.prueba.bibliotecaApi.models;
 
-import com.prueba.bibliotecaApi.exceptions.RolErroneoException;
 import com.prueba.bibliotecaApi.exceptions.ValorVacioException;
 import lombok.Getter;
 import lombok.Setter;
