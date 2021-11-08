@@ -13,13 +13,17 @@ import java.util.stream.Collectors;
 public class Sucursal {
   @Id
   @GeneratedValue(strategy = GenerationType.TABLE)
-  @Getter @Setter
+  @Getter
+  @Setter
   private Long id;
-  @Getter @Setter
+  @Getter
+  @Setter
   private String nombre;
-  @Getter @Setter
+  @Getter
+  @Setter
   private String posicionX;
-  @Getter @Setter
+  @Getter
+  @Setter
   private String posicionY;
 
   @OneToMany(cascade = CascadeType.ALL)
@@ -32,26 +36,34 @@ public class Sucursal {
   @JoinColumn(name = "id_sucursal")
   private List<Administrador> administradors = new ArrayList<>();
 
-  Sucursal(String nombre, String posicionX, String posicionY){
+  Sucursal(String nombre, String posicionX, String posicionY) {
     this.validarVaciosEn(nombre, posicionX, posicionY);
     this.nombre = nombre;
 
   }
 
   private void validarVaciosEn(String nombre, String posicionX, String posicionY) {
-    if(nombre==null || posicionX == null || posicionY == null){
+    if (nombre == null || posicionX == null || posicionY == null) {
       throw new ValorVacioException("No completo todos los campos");
     }
   }
 
-  List<Libro> librosEnPrestamo(){
+  public void hacerPrestamoA(Cliente cliente, Libro libro) {
+    if (!this.libros.contains(libro))
+      throw new RuntimeException("Esta sucursal no contiene el libro");
+    libro.sePrestoA(cliente);
+  }
+
+  List<Libro> librosEnPrestamo() {
     return libros.stream().filter(libro -> libro.estoyPrestado()).collect(Collectors.toList());
   }
 
-  void agregarLibro(Libro libro, Administrador administrador){
-    if(this.administradors.contains(administrador))
+  void agregarLibro(Libro libro, Administrador administrador) {
+    if (this.administradors.contains(administrador))
       this.libros.add(libro);
   }
 
-  void agregarAdministrador(Administrador administrador){ this.administradors.add(administrador); }
+  void agregarAdministrador(Administrador administrador) {
+    this.administradors.add(administrador);
+  }
 }
