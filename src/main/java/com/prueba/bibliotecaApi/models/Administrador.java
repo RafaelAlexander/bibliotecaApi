@@ -28,8 +28,4 @@ public class Administrador {
       throw new ValorVacioException("Debe colocar una sucursal");
     sucursal.agregarAdministrador(this);
   }
-
-  void agregarLibro(Libro libro, Sucursal sucursal) {
-    sucursal.agregarLibro(libro, this);
-  }
 }

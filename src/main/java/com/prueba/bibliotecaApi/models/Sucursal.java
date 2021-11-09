@@ -36,9 +36,13 @@ public class Sucursal {
   @JoinColumn(name = "id_sucursal")
   private List<Administrador> administradors = new ArrayList<>();
 
-  Sucursal(String nombre, String posicionX, String posicionY) {
+  public Sucursal(String nombre, String posicionX, String posicionY) {
     this.validarVaciosEn(nombre, posicionX, posicionY);
     this.nombre = nombre;
+
+  }
+
+  public Sucursal() {
 
   }
 

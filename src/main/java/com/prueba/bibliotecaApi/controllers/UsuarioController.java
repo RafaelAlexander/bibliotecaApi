@@ -12,6 +12,7 @@ import com.prueba.bibliotecaApi.servicios.UsuarioDAOImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -28,8 +29,9 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+@PreAuthorize("authenticated")
 @RestController
-@RequestMapping(value = "/api/")
+@RequestMapping(value = "/api/usuario")
 @RequiredArgsConstructor
 public class UsuarioController {
 
@@ -41,20 +43,30 @@ public class UsuarioController {
 
   private final String palabraSecreta = "esto no es una clave secreta";
 
-  @GetMapping(value = "/usuarios")
+  private final static String URL =  "/api/usuario";
+  private final static String ALL = "/all";
+  private final static String SAVE = "/save";
+  private final static String REFRESH = "/token/refresh";
+  private final static String DELETE = "/delete";
+  private final static String SAVE_CLIENTE = "/cliente/save";
+
+  @PreAuthorize("hasAnyAuthority('Usuario')")
+  @GetMapping(value = ALL)
   public ResponseEntity<List<Usuario>> darTodosLoUsuarios() {
     return ResponseEntity.ok().body(repositorio.findAll());
   }
 
-  @PostMapping(value = "/usuario/save")
+  @PreAuthorize("permitAll")
+  @PostMapping(value = SAVE)
   public ResponseEntity<Usuario> agregar(@RequestBody Usuario usuario) {
     URI uri = URI.create(ServletUriComponentsBuilder.
         fromCurrentContextPath().
-        path("/api/usuario/save").toUriString());
+        path(URL+SAVE).toUriString());
     return ResponseEntity.created(uri).body(this.repositorio.save(usuario));
   }
 
-  @PostMapping(value = "/token/refresh")
+  @PreAuthorize("permiteAll")
+  @PostMapping(value = REFRESH)
   public void refrescarToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String authorizationHeader = request.getHeader(AUTHORIZATION);
     if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
@@ -89,7 +101,8 @@ public class UsuarioController {
     }
   }
 
-  @DeleteMapping(value = "/delete")
+  @PreAuthorize("hasAnyAuthority('Usuario')")
+  @DeleteMapping(value = DELETE)
   public ResponseEntity<?> borrar(HttpServletRequest request, HttpServletResponse response) {
     Usuario usuario = this.usuarioJWT.obtenerUsuarioJWT(request);
     if (usuario != null) {
@@ -99,13 +112,14 @@ public class UsuarioController {
     return ResponseEntity.internalServerError().build();
   }
 
-  @PostMapping(value = "/cliente/save")
+  @PreAuthorize("hasAnyAuthority('Usuario')")
+  @PostMapping(value = SAVE_CLIENTE)
   public ResponseEntity<?> agregarClienteAUsuario(@RequestBody Cliente cliente, HttpServletRequest request) {
     Usuario usuario = this.usuarioJWT.obtenerUsuarioJWT(request);
     usuario.setCliente(cliente);
     URI uri = URI.create(ServletUriComponentsBuilder.
         fromCurrentContextPath().
-        path("/api/cliente/save").toUriString());
+        path(URL+SAVE_CLIENTE).toUriString());
     return ResponseEntity.created(uri).body(this.repositorio.save(usuario));
   }
 }
