@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.prueba.bibliotecaApi.funciones.UsuarioJWT;
 import com.prueba.bibliotecaApi.models.Cliente;
 import com.prueba.bibliotecaApi.models.Usuario;
 import com.prueba.bibliotecaApi.servicios.UsuarioDAOImpl;
@@ -34,6 +35,9 @@ public class UsuarioController {
 
   @Autowired
   private UsuarioDAOImpl repositorio;
+
+  @Autowired
+  private UsuarioJWT usuarioJWT;
 
   private final String palabraSecreta = "esto no es una clave secreta";
 
@@ -86,41 +90,22 @@ public class UsuarioController {
   }
 
   @DeleteMapping(value = "/delete")
-  public ResponseEntity<?> borrar(HttpServletRequest request) {
-    Usuario usuario = this.obtenerUsuarioJWT(request);
+  public ResponseEntity<?> borrar(HttpServletRequest request, HttpServletResponse response) {
+    Usuario usuario = this.usuarioJWT.obtenerUsuarioJWT(request);
     if (usuario != null) {
       this.repositorio.delete(usuario);
       return ResponseEntity.ok().build();
     }
-    return ResponseEntity.notFound().build();
+    return ResponseEntity.internalServerError().build();
   }
 
   @PostMapping(value = "/cliente/save")
   public ResponseEntity<?> agregarClienteAUsuario(@RequestBody Cliente cliente, HttpServletRequest request) {
-    Usuario usuario = this.obtenerUsuarioJWT(request);
+    Usuario usuario = this.usuarioJWT.obtenerUsuarioJWT(request);
     usuario.setCliente(cliente);
     URI uri = URI.create(ServletUriComponentsBuilder.
         fromCurrentContextPath().
         path("/api/cliente/save").toUriString());
     return ResponseEntity.created(uri).body(this.repositorio.save(usuario));
-  }
-
-  private Usuario obtenerUsuarioJWT(HttpServletRequest request) {
-    String authorizationHeader = request.getHeader(AUTHORIZATION);
-    if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-      try {
-        String refreshToken = authorizationHeader.substring("Bearer ".length());
-        Algorithm algorithm = Algorithm.HMAC256(this.palabraSecreta.getBytes());
-        JWTVerifier verifier = JWT.require(algorithm).build();
-        DecodedJWT decodedJWT = verifier.verify(refreshToken);
-        String nombre = decodedJWT.getSubject();
-        Usuario usuario = this.repositorio.findByNombre(nombre);
-        return usuario;
-      } catch (Exception exception) {
-        return null;
-      }
-    } else {
-      return null;
-    }
   }
 }

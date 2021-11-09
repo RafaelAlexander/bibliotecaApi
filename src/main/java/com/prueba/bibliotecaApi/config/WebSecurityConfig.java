@@ -41,7 +41,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     http.authorizeRequests().antMatchers(GET,"/api/usuarios/**").hasAnyAuthority("Usuario");
     http.authorizeRequests().anyRequest().authenticated();
     http.addFilter(getCustomAuthenticationFilter());
-    http.addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
+    http.addFilterAfter(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
   }
 
   @Bean
